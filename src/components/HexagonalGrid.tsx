@@ -116,37 +116,57 @@ function HexagonalGrid() {
   }, []);
 
   React.useEffect(() => {
-    webSocketState.messages?.map((message) => {
-      const name = username;
-      if (!name) return navigate("/");
-      getPlayer(name)
-        .then((response) => {
-          setPlayer(response.data);
-        })
-        .catch(setError);
+    if (!webSocketState.messages || webSocketState.messages.length === 0) return;
 
-      const landd = getCurLand();
-      if (!landd) return navigate("/");
-      getLand()
-        .then((response) => setLand(response.data))
-        .catch(setError);
-    });
-  }, [[webSocketState.messages]]);
+    const name = username;
+    if (!name) {
+      navigate("/");
+      return;
+    }
+
+    getPlayer(name)
+      .then((response) => {
+        setPlayer(response.data);
+      })
+      .catch(setError);
+
+    const landd = getCurLand();
+    if (!landd) {
+      navigate("/");
+      return;
+    }
+
+    getLand()
+      .then((response) => setLand(response.data))
+      .catch(setError);
+  }, [webSocketState.messages, username, navigate]);
 
   React.useEffect(() => {
-    webSocketState.messages?.map((message) => {
-      const name = username;
-      if (!name) return navigate("/");
-      if (message.content === name) {
-        setTextDisbut(false);
-      } else {
-        setTextDisbut(true);
-      }
-      if (message.sender === "GM") {
-        setWebsocketMessage(message.content);
-      }
-    });
-  }, [[webSocketState.messages]]);
+    if (!webSocketState.messages || webSocketState.messages.length === 0) return;
+
+    const name = username;
+    if (!name) {
+      navigate("/");
+      return;
+    }
+
+    const lastMessage =
+      webSocketState.messages[webSocketState.messages.length - 1];
+
+    if (lastMessage.content === name) {
+      setTextDisbut(false);
+    } else {
+      setTextDisbut(true);
+    }
+
+    // Find the last message from GM to display
+    const lastGMMessage = [...webSocketState.messages]
+      .reverse()
+      .find((m) => m.sender === "GM");
+    if (lastGMMessage) {
+      setWebsocketMessage(lastGMMessage.content);
+    }
+  }, [webSocketState.messages, username, navigate]);
 
   const [countdown, setCountdown] = useState(0);
   const [countdown2, setCountdown2] = useState(0);

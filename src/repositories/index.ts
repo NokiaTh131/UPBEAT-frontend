@@ -8,7 +8,7 @@ function getAxiosInstance() {
 }
 
 export function newLand(): Response<ApiResponse> {
-  return getAxiosInstance().post(`/land`);
+  return getAxiosInstance().post(`/Land`);
 }
 
 export function newPlayer(name: string): Response<Player> {
@@ -20,7 +20,7 @@ export function getPlayer(name: string): Response<Player> {
 }
 
 export function getLand(): Response<ApiResponse> {
-  return getAxiosInstance().get(`/land`);
+  return getAxiosInstance().get(`/Land`);
 }
 
 export function getLeaderboard(): Response<Player[]> {

@@ -27,10 +27,13 @@ function Menu() {
   }, [landed]);
 
   useEffect(() => {
-    webSocketState.messages?.map((message) => {
-      if (message.content === "Start") navigate("/map");
-    });
-  }, [[webSocketState.messages]]);
+    const shouldNavigate = webSocketState.messages?.some(
+      (message) => message.content === "Start"
+    );
+    if (shouldNavigate) {
+      navigate("/map");
+    }
+  }, [webSocketState.messages, navigate]);
 
   function handleSuccess(response: AxiosResponse<ApiResponse>) {
     setCurLand(response.data.players);
