@@ -24,7 +24,7 @@ function useWebSocket() {
         onError
       );
     } catch (e) {
-      console.log(e);
+      // Connection error handled silently
     }
   }
 
@@ -67,6 +67,6 @@ function useWebSocket() {
 
 export default useWebSocket;
 
-const onError = (err: Stomp.Message) => {
-  console.log(err);
+const onError = (_err: Stomp.Message) => {
+  // WebSocket error handled silently
 };

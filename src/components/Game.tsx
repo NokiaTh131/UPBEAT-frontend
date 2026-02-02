@@ -27,7 +27,6 @@ function Game() {
   const username = useAppSelector(selectUsername);
   const webSocketState = useAppSelector(selectWebSocket);
   const { connect } = useWebSocket();
-  console.log("WebSocket Connected:", connect);
   const [settImage, setSettImage] = useState(sett);
   const [poppeded, pop] = React.useState(false);
   const [settHighlighted, setSettHighlighted] = useState(false);
@@ -88,13 +87,10 @@ function Game() {
               src={settImage}
               alt="Settings"
               onMouseEnter={() => setSettHighlighted(true)}
-              onMouseLeave={() => {
-                setSettHighlighted(false);
-                handleSettRelease();
-              }}
+              onMouseLeave={() => setSettHighlighted(false)}
               className={settHighlighted ? "highlighted" : ""}
-              onClick={handleSettClick}
-              onMouseUp={handleSettRelease}
+              onClick={() => setShowNotification(true)}
+              style={{ cursor: "pointer" }}
             />
           </div>
         </div>
