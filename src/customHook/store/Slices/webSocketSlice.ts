@@ -39,10 +39,15 @@ export const webSocketSlice = createSlice({
     setStompClient: (state, action: PayloadAction<Stomp.Client>) => {
       state.stompClient = action.payload;
     },
+    resetWebSocket: (state) => {
+      state.isConnected = false;
+      state.stompClient = undefined;
+      state.messages = [];
+    },
   },
 });
 
-export const { setIsConnected, appendMessage, setStompClient } =
+export const { setIsConnected, appendMessage, setStompClient, resetWebSocket } =
   webSocketSlice.actions;
 export default webSocketSlice.reducer;
 export const selectWebSocket = (state: RootState) => state.webSocket;

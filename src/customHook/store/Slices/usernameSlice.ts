@@ -16,9 +16,12 @@ export const usernameSlice = createSlice({
         setUsername: (state, action: PayloadAction<string>) => {
             state.username = action.payload;
         },
+        resetUsername: (state) => {
+            state.username = '';
+        },
     },
 });
 
-export const {setUsername} = usernameSlice.actions;
+export const {setUsername, resetUsername} = usernameSlice.actions;
 export default usernameSlice.reducer;
 export const selectUsername = (state: RootState) => state.username.username;

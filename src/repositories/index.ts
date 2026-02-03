@@ -105,3 +105,21 @@ export function StartGame(): void {
 export function playerReady(): void {
   getAxiosInstance().put("/newGame");
 }
+
+export function resetGame(): Promise<void> {
+  return getAxiosInstance().post("/reset");
+}
+
+export function clearLocalStorage(): void {
+  window.localStorage.removeItem("player");
+  window.localStorage.removeItem("land");
+  // Clear all construction plans
+  const keysToRemove: string[] = [];
+  for (let i = 0; i < window.localStorage.length; i++) {
+    const key = window.localStorage.key(i);
+    if (key && key.startsWith("constructionPlan_")) {
+      keysToRemove.push(key);
+    }
+  }
+  keysToRemove.forEach((key) => window.localStorage.removeItem(key));
+}

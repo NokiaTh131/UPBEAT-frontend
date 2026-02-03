@@ -10,13 +10,16 @@ import {
   setCurConstructionPlan,
   Parse,
   playerReady,
+  resetGame,
+  clearLocalStorage,
 } from "../repositories";
 import { useNavigate } from "react-router-dom";
 import HexTile, { TerrainType } from "./hex/HexTile";
 import MedievalModal from "./common/MedievalModal";
-import { useAppSelector } from "../customHook/store/hooks.ts";
+import { useAppSelector, useAppDispatch } from "../customHook/store/hooks.ts";
 import { selectUsername } from "../customHook/store/Slices/usernameSlice.ts";
-import { selectWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
+import { resetUsername } from "../customHook/store/Slices/usernameSlice.ts";
+import { selectWebSocket, resetWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
 
 // Terrain assignment based on position (creates varied landscape)
 const getTerrainForPosition = (row: number, col: number): TerrainType => {
@@ -72,8 +75,12 @@ function HexagonalGrid() {
   const [countdown, setCountdown] = useState(0);
   const [countdown2, setCountdown2] = useState(0);
   const [isEditorFolded, setIsEditorFolded] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [winnerName, setWinnerName] = useState("");
+  const [isRestarting, setIsRestarting] = useState(false);
 
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // Countdown effect for plan submission
   useEffect(() => {
@@ -186,8 +193,46 @@ function HexagonalGrid() {
     const lastGMMessage = [...webSocketState.messages].reverse().find((m) => m.sender === "GM");
     if (lastGMMessage) {
       setWebsocketMessage(lastGMMessage.content);
+      
+      // Check for winner announcement
+      if (lastGMMessage.content.toLowerCase().includes("winner")) {
+        // Extract winner name from message like "The Winner is PlayerName"
+        const winnerMatch = lastGMMessage.content.match(/winner\s+is\s+(\w+)/i);
+        if (winnerMatch) {
+          setWinnerName(winnerMatch[1]);
+        } else {
+          setWinnerName(lastGMMessage.content);
+        }
+        setShowGameOver(true);
+      }
     }
   }, [webSocketState.messages, username, navigate]);
+
+  // Handle game restart
+  const handleRestart = async () => {
+    setIsRestarting(true);
+    try {
+      // Call backend reset
+      await resetGame();
+      
+      // Clear local storage
+      clearLocalStorage();
+      
+      // Reset Redux state
+      dispatch(resetWebSocket());
+      dispatch(resetUsername());
+      
+      // Navigate to home
+      navigate("/");
+    } catch (error) {
+      console.error("Failed to reset game:", error);
+      // Navigate anyway
+      clearLocalStorage();
+      dispatch(resetWebSocket());
+      dispatch(resetUsername());
+      navigate("/");
+    }
+  };
 
   // Wheel zoom handler - zoom towards mouse position
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -756,6 +801,80 @@ function HexagonalGrid() {
           >
             {notificationMessage}
           </p>
+        </div>
+      </MedievalModal>
+
+      {/* Game Over Modal - Highest z-index, not closable, not foldable */}
+      <MedievalModal
+        isOpen={showGameOver}
+        title="Game Over"
+        size="medium"
+        closable={false}
+        foldable={false}
+        zIndex={11000}
+        position="center"
+        showBackdrop={true}
+      >
+        <div style={{ textAlign: 'center', padding: '24px 0' }}>
+          <div
+            style={{
+              fontSize: '4rem',
+              marginBottom: '16px',
+            }}
+          >
+            👑
+          </div>
+          <h2
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '2rem',
+              color: '#c9a227',
+              marginBottom: '16px',
+              textTransform: 'uppercase',
+            }}
+          >
+            Victory!
+          </h2>
+          <p
+            style={{
+              fontFamily: "'IM Fell English', serif",
+              fontSize: '1.3rem',
+              color: '#5d2e0c',
+              marginBottom: '8px',
+            }}
+          >
+            The realm has been conquered by
+          </p>
+          <p
+            style={{
+              fontFamily: "'Cinzel', serif",
+              fontSize: '1.8rem',
+              fontWeight: 700,
+              color: '#8b0000',
+              marginBottom: '32px',
+            }}
+          >
+            {winnerName}
+          </p>
+          <button
+            onClick={handleRestart}
+            disabled={isRestarting}
+            style={{
+              padding: '16px 48px',
+              fontFamily: "'Cinzel', serif",
+              fontSize: '1.2rem',
+              fontWeight: 700,
+              backgroundColor: isRestarting ? '#6b6b6b' : '#2d5016',
+              color: '#f5e6c8',
+              border: '4px solid #1a3009',
+              borderRadius: '8px',
+              cursor: isRestarting ? 'not-allowed' : 'pointer',
+              textTransform: 'uppercase',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+            }}
+          >
+            {isRestarting ? 'Restarting...' : 'Play Again'}
+          </button>
         </div>
       </MedievalModal>
 
