@@ -4,10 +4,12 @@ import startsfx from "../assets/audio/enter.mp3";
 import { AxiosResponse } from "axios";
 import { useNavigate } from "react-router-dom";
 import { ApiResponse, Player } from "../model";
-import { newLand, setCurLand, StartGame, getPlayers } from "../repositories";
+import { newLand, setCurLand, StartGame, getPlayers, deletePlayer } from "../repositories";
 import useWebSocket from "../customHook/useWebSocket.ts";
 import { useAppSelector } from "../customHook/store/hooks.ts";
 import { selectWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
+import MedievalModal from "./common/MedievalModal";
+import { selectUsername } from "../customHook/store/Slices/usernameSlice.ts";
 
 function Menu() {
   const [isPressed, setIsPressed] = useState(false);
@@ -15,8 +17,10 @@ function Menu() {
   const { sendMessage } = useWebSocket();
   const navigate = useNavigate();
   const webSocketState = useAppSelector(selectWebSocket);
+  const currentUsername = useAppSelector(selectUsername);
   const [landed, setLanded] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState<Player[]>([]);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   // Poll for connected players
   useEffect(() => {
@@ -53,15 +57,33 @@ function Menu() {
     audio.play();
   };
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent navigation
     setIsPressed(true);
     playClickSound();
-    sendMessage("Start", "Start");
-    StartGame();
+    
     setTimeout(() => {
       setIsPressed(false);
-      setLanded(true);
+      setShowConfirmation(true);
     }, 200);
+  };
+
+  const handleConfirmStart = () => {
+    sendMessage("Start", "Start");
+    StartGame();
+    setShowConfirmation(false);
+    setLanded(true);
+  };
+
+  const handleKick = async (name: string) => {
+    try {
+      await deletePlayer(name);
+      // Refresh list immediately
+      const response = await getPlayers();
+      setConnectedPlayers(response.data);
+    } catch (error) {
+      console.error("Failed to banish lord:", error);
+    }
   };
 
   return (
@@ -231,13 +253,33 @@ function Menu() {
                     i < connectedPlayers.length - 1 ? "1px dashed #c9a227" : "none",
                   display: "flex",
                   alignItems: "center",
-                  justifyContent: "center",
+                  justifyContent: "space-between",
                   gap: "8px",
+                  paddingLeft: "10px",
+                  paddingRight: "10px",
                 }}
               >
-                <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
-                {p.name}
-                <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
+                  {p.name}
+                  <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
+                </div>
+                <button
+                  onClick={() => handleKick(p.name)}
+                  title={p.name === currentUsername ? "Flee the Realm" : "Banish Lord"}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#8b0000",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                    fontSize: "1.2rem",
+                    padding: "0 5px",
+                    lineHeight: "1",
+                  }}
+                >
+                  ×
+                </button>
               </div>
             ))
           )}
@@ -255,6 +297,61 @@ function Menu() {
           {connectedPlayers.length} {connectedPlayers.length === 1 ? "Lord" : "Lords"} Awaiting
         </div>
       </div>
+
+      {/* Start Game Confirmation Modal */}
+      <MedievalModal
+        isOpen={showConfirmation}
+        onClose={() => setShowConfirmation(false)}
+        title="Declare War?"
+        size="small"
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <p
+            style={{
+              fontFamily: "'IM Fell English', serif",
+              fontSize: '1.1rem',
+              color: '#5d2e0c',
+              marginBottom: '24px',
+            }}
+          >
+            Are you certain you wish to begin the conquest with {connectedPlayers.length} {connectedPlayers.length === 1 ? "lord" : "lords"}?
+          </p>
+          <div style={{ display: 'flex', gap: '16px', justifyContent: 'center' }}>
+            <button
+              onClick={handleConfirmStart}
+              style={{
+                padding: '12px 32px',
+                fontFamily: "'Cinzel', serif",
+                fontWeight: 700,
+                backgroundColor: '#2d5016',
+                color: '#f5e6c8',
+                border: '3px solid #1a3009',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+              }}
+            >
+              Aye
+            </button>
+            <button
+              onClick={() => setShowConfirmation(false)}
+              style={{
+                padding: '12px 32px',
+                fontFamily: "'Cinzel', serif",
+                fontWeight: 700,
+                backgroundColor: '#8b0000',
+                color: '#f5e6c8',
+                border: '3px solid #4a0000',
+                borderRadius: '4px',
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+              }}
+            >
+              Nay
+            </button>
+          </div>
+        </div>
+      </MedievalModal>
     </div>
   );
 }

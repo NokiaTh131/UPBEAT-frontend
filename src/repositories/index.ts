@@ -19,6 +19,10 @@ export function getPlayer(name: string): Response<Player> {
   return getAxiosInstance().get(`/player/${encodeURIComponent(name)}`);
 }
 
+export function deletePlayer(name: string): Promise<void> {
+  return getAxiosInstance().delete(`/player/${encodeURIComponent(name)}`);
+}
+
 export function getPlayers(): Response<Player[]> {
   return getAxiosInstance().get(`/players`);
 }
