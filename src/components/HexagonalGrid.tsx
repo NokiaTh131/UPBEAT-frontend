@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "./HexagonalGrid.css";
 import { Player, ApiResponse } from "../model";
 import {
@@ -42,7 +42,13 @@ const playerColors = [
 ];
 
 function HexagonalGrid() {
-  const [zoomLevel, setZoomLevel] = useState(100);
+  // Zoom and pan state
+  const [scale, setScale] = useState(1);
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   const [player, setPlayer] = useState<Player | null>(null);
   const [landed, setLand] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -183,18 +189,90 @@ function HexagonalGrid() {
     }
   }, [webSocketState.messages, username, navigate]);
 
-  // Keyboard zoom controls
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "z" || event.key === "Z") {
-        setZoomLevel((prev) => prev + 10);
-      } else if (event.key === "x" || event.key === "X") {
-        setZoomLevel((prev) => Math.max(10, prev - 10));
-      }
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+  // Wheel zoom handler - zoom towards mouse position
+  const handleWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault();
+    
+    const container = containerRef.current;
+    if (!container) return;
+    
+    const rect = container.getBoundingClientRect();
+    
+    // Mouse position relative to container
+    const mouseX = e.clientX - rect.left;
+    const mouseY = e.clientY - rect.top;
+    
+    // Calculate zoom
+    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    const newScale = Math.min(Math.max(scale * zoomFactor, 0.2), 3);
+    
+    // Adjust pan to zoom towards mouse position
+    const scaleChange = newScale / scale;
+    const newPanX = mouseX - (mouseX - panOffset.x) * scaleChange;
+    const newPanY = mouseY - (mouseY - panOffset.y) * scaleChange;
+    
+    setScale(newScale);
+    setPanOffset({ x: newPanX, y: newPanY });
+  }, [scale, panOffset]);
+
+  // Mouse drag handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    // Only start drag on left mouse button and not on interactive elements
+    if (e.button !== 0) return;
+    
+    setIsDragging(true);
+    setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
+    e.preventDefault();
+  }, [panOffset]);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isDragging) return;
+    
+    setPanOffset({
+      x: e.clientX - dragStart.x,
+      y: e.clientY - dragStart.y,
+    });
+  }, [isDragging, dragStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsDragging(false);
   }, []);
+
+  const handleMouseLeave = useCallback(() => {
+    setIsDragging(false);
+  }, []);
+
+  // Attach wheel event listener
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    
+    container.addEventListener('wheel', handleWheel, { passive: false });
+    return () => container.removeEventListener('wheel', handleWheel);
+  }, [handleWheel]);
+
+  // Center grid initially when data loads
+  useEffect(() => {
+    if (!player?.bindings || !containerRef.current) return;
+    
+    const container = containerRef.current;
+    const { rows, cols } = player.bindings;
+    
+    // Calculate grid dimensions
+    const hexWidth = 70;
+    const hexHeight = hexWidth * 0.866;
+    const gridWidth = cols * hexWidth * 0.75 + hexWidth * 0.25;
+    const gridHeight = rows * hexHeight + hexHeight * 0.5;
+    
+    // Center the grid in the container
+    const containerWidth = container.clientWidth;
+    const containerHeight = container.clientHeight;
+    
+    const initialX = (containerWidth - gridWidth) / 2;
+    const initialY = (containerHeight - gridHeight) / 2;
+    
+    setPanOffset({ x: Math.max(50, initialX), y: Math.max(100, initialY) });
+  }, [player?.bindings]);
 
   const handleSaveConstructionPlan = async () => {
     setIsButtonDisabled(true);
@@ -430,19 +508,27 @@ function HexagonalGrid() {
 
       {/* Hex Grid - Even-Q Offset Coordinate System for Flat-Top Hexes */}
       <div
+        ref={containerRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
         style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'flex-start',
-          padding: '100px 20px 150px',
-          overflow: 'auto',
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          overflow: 'hidden',
+          cursor: isDragging ? 'grabbing' : 'grab',
         }}
       >
         <div
           style={{
-            position: 'relative',
-            transform: `scale(${zoomLevel / 100})`,
-            transformOrigin: 'top center',
+            position: 'absolute',
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px) scale(${scale})`,
+            transformOrigin: '0 0',
+            willChange: 'transform',
           }}
         >
           {Array.from({ length: rows }).map((_, rowIdx) =>
@@ -679,7 +765,7 @@ function HexagonalGrid() {
           zIndex: 999,
         }}
       >
-        Z: Zoom In | X: Zoom Out | {zoomLevel}%
+        Scroll: Zoom | Drag: Pan | {Math.round(scale * 100)}%
       </div>
     </div>
   );
