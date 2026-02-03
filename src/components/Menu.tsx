@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import startsfx from "../assets/audio/enter.mp3";
 import { AxiosResponse } from "axios";
 import { useNavigate } from "react-router-dom";
-import { ApiResponse } from "../model";
-import { newLand, setCurLand, StartGame } from "../repositories";
+import { ApiResponse, Player } from "../model";
+import { newLand, setCurLand, StartGame, getPlayers } from "../repositories";
 import useWebSocket from "../customHook/useWebSocket.ts";
 import { useAppSelector } from "../customHook/store/hooks.ts";
 import { selectWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
@@ -16,6 +16,20 @@ function Menu() {
   const navigate = useNavigate();
   const webSocketState = useAppSelector(selectWebSocket);
   const [landed, setLanded] = useState(false);
+  const [connectedPlayers, setConnectedPlayers] = useState<Player[]>([]);
+
+  // Poll for connected players
+  useEffect(() => {
+    const fetchPlayers = () => {
+      getPlayers()
+        .then((response) => setConnectedPlayers(response.data))
+        .catch(console.error);
+    };
+
+    fetchPlayers();
+    const interval = setInterval(fetchPlayers, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     newLand().then(handleSuccess);
@@ -164,6 +178,82 @@ function Menu() {
         }}
       >
         Click the shield to begin thy conquest of the realm
+      </div>
+
+      {/* Waiting Room / Player List */}
+      <div
+        style={{
+          marginTop: "20px",
+          padding: "20px",
+          backgroundColor: "#e8d4a8",
+          border: "3px solid #8b4513",
+          borderRadius: "8px",
+          width: "300px",
+          textAlign: "center",
+          boxShadow: "0 4px 8px rgba(0,0,0,0.3)",
+        }}
+      >
+        <h3
+          style={{
+            fontFamily: "'Cinzel', serif",
+            color: "#5d2e0c",
+            margin: "0 0 15px 0",
+            borderBottom: "2px solid #8b4513",
+            paddingBottom: "10px",
+            fontSize: "1.2rem",
+            fontWeight: "700",
+          }}
+        >
+          Gathering of Lords
+        </h3>
+        <div
+          style={{
+            maxHeight: "150px",
+            overflowY: "auto",
+            fontFamily: "'IM Fell English', serif",
+            fontSize: "1.1rem",
+            color: "#2d2d2d",
+            scrollbarWidth: "thin",
+            scrollbarColor: "#8b4513 #e8d4a8",
+          }}
+        >
+          {connectedPlayers.length === 0 ? (
+            <div style={{ fontStyle: "italic", color: "#6b4423" }}>
+              The hall is empty...
+            </div>
+          ) : (
+            connectedPlayers.map((p, i) => (
+              <div
+                key={i}
+                style={{
+                  padding: "6px 0",
+                  borderBottom:
+                    i < connectedPlayers.length - 1 ? "1px dashed #c9a227" : "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: "8px",
+                }}
+              >
+                <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
+                {p.name}
+                <span style={{ fontSize: "0.8em", color: "#8b0000" }}>⚜</span>
+              </div>
+            ))
+          )}
+        </div>
+        <div
+          style={{
+            marginTop: "15px",
+            fontSize: "0.9rem",
+            color: "#6b4423",
+            fontFamily: "'Cinzel', serif",
+            borderTop: "2px solid #8b4513",
+            paddingTop: "10px",
+          }}
+        >
+          {connectedPlayers.length} {connectedPlayers.length === 1 ? "Lord" : "Lords"} Awaiting
+        </div>
       </div>
     </div>
   );
