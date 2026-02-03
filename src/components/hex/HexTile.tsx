@@ -167,7 +167,7 @@ const HexTile: React.FC<HexTileProps> = ({
       {/* Deposit indicator (small number) */}
       {deposit > 0 && (
         <text
-          x={width - 12}
+          x={width / 1.6}
           y={height - 8}
           fontSize="10"
           fontFamily="Cinzel, serif"

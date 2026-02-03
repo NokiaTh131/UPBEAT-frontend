@@ -48,7 +48,7 @@ function HexagonalGrid() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const [player, setPlayer] = useState<Player | null>(null);
   const [landed, setLand] = useState<ApiResponse | null>(null);
   const [error, setError] = useState<Error | null>(null);
@@ -192,25 +192,25 @@ function HexagonalGrid() {
   // Wheel zoom handler - zoom towards mouse position
   const handleWheel = useCallback((e: WheelEvent) => {
     e.preventDefault();
-    
+
     const container = containerRef.current;
     if (!container) return;
-    
+
     const rect = container.getBoundingClientRect();
-    
+
     // Mouse position relative to container
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
-    
+
     // Calculate zoom
     const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
     const newScale = Math.min(Math.max(scale * zoomFactor, 0.2), 3);
-    
+
     // Adjust pan to zoom towards mouse position
     const scaleChange = newScale / scale;
     const newPanX = mouseX - (mouseX - panOffset.x) * scaleChange;
     const newPanY = mouseY - (mouseY - panOffset.y) * scaleChange;
-    
+
     setScale(newScale);
     setPanOffset({ x: newPanX, y: newPanY });
   }, [scale, panOffset]);
@@ -219,7 +219,7 @@ function HexagonalGrid() {
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Only start drag on left mouse button and not on interactive elements
     if (e.button !== 0) return;
-    
+
     setIsDragging(true);
     setDragStart({ x: e.clientX - panOffset.x, y: e.clientY - panOffset.y });
     e.preventDefault();
@@ -227,7 +227,7 @@ function HexagonalGrid() {
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (!isDragging) return;
-    
+
     setPanOffset({
       x: e.clientX - dragStart.x,
       y: e.clientY - dragStart.y,
@@ -246,7 +246,7 @@ function HexagonalGrid() {
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    
+
     container.addEventListener('wheel', handleWheel, { passive: false });
     return () => container.removeEventListener('wheel', handleWheel);
   }, [handleWheel]);
@@ -254,23 +254,23 @@ function HexagonalGrid() {
   // Center grid initially when data loads
   useEffect(() => {
     if (!player?.bindings || !containerRef.current) return;
-    
+
     const container = containerRef.current;
     const { rows, cols } = player.bindings;
-    
+
     // Calculate grid dimensions
     const hexWidth = 70;
     const hexHeight = hexWidth * 0.866;
     const gridWidth = cols * hexWidth * 0.75 + hexWidth * 0.25;
     const gridHeight = rows * hexHeight + hexHeight * 0.5;
-    
+
     // Center the grid in the container
     const containerWidth = container.clientWidth;
     const containerHeight = container.clientHeight;
-    
+
     const initialX = (containerWidth - gridWidth) / 2;
     const initialY = (containerHeight - gridHeight) / 2;
-    
+
     setPanOffset({ x: Math.max(50, initialX), y: Math.max(100, initialY) });
   }, [player?.bindings]);
 
@@ -590,8 +590,8 @@ function HexagonalGrid() {
             position: 'fixed',
             bottom: '20px',
             right: '20px',
-            width: '500px',
-            backgroundColor: '#1a1a1a',
+            width: isEditorFolded ? '300px' : '700px',
+            backgroundColor: '#e8d4a8',
             border: '3px solid #8b4513',
             borderRadius: '8px',
             zIndex: 1000,
@@ -634,16 +634,16 @@ function HexagonalGrid() {
                 onChange={(e) => setConstructionPlanText(e.target.value)}
                 style={{
                   width: '100%',
-                  height: '150px',
+                  height: '530px',
                   padding: '12px',
                   fontFamily: "'Courier New', monospace",
                   fontSize: '0.9rem',
                   border: '2px solid #444',
                   borderRadius: '4px',
-                  backgroundColor: '#000000',
+                  backgroundColor: '#1a1a1a',
                   color: '#ffffff',
-                  resize: 'vertical',
                   boxSizing: 'border-box',
+                  resize: 'none',
                 }}
               />
               <button
@@ -671,12 +671,16 @@ function HexagonalGrid() {
         </div>
       )}
 
-      {/* Turn Notification Modal */}
+      {/* Turn Notification Modal - Non-closable but foldable, lower z-index */}
       <MedievalModal
         isOpen={showNotification}
-        onClose={() => setShowNotification(false)}
         title="Thy Turn Approaches!"
         size="small"
+        closable={false}
+        foldable={true}
+        zIndex={9000}
+        position="bottom-left"
+        showBackdrop={false}
       >
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
           <p
@@ -730,12 +734,17 @@ function HexagonalGrid() {
         </div>
       </MedievalModal>
 
-      {/* Cell Info Modal */}
+      {/* Cell Info Modal - Closable, higher z-index, appears on top */}
       <MedievalModal
         isOpen={showCellInfo}
         onClose={() => setShowCellInfo(false)}
         title="Territory Information"
         size="small"
+        closable={true}
+        foldable={false}
+        zIndex={10000}
+        position="center"
+        showBackdrop={true}
       >
         <div style={{ textAlign: 'center', padding: '16px 0' }}>
           <p
