@@ -69,10 +69,10 @@ const HexTile: React.FC<HexTileProps> = ({
     <svg
       width={width}
       height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      viewBox={`-2 -2 ${width + 4} ${height + 4}`}
       className={`hex-tile ${className}`}
       onClick={onClick}
-      style={{ cursor: onClick ? 'pointer' : 'default' }}
+      style={{ cursor: onClick ? 'pointer' : 'default', overflow: 'visible' }}
     >
       <defs>
         {/* Terrain patterns */}

@@ -9,6 +9,8 @@ import {
 import JoinLeaveMessage from "../customHook/joinLeaveMessage.tsx";
 import MedievalModal from "./common/MedievalModal.tsx";
 
+import GameManual from "./common/GameManual.tsx";
+
 // Medieval Title Banner
 const TitleBanner: React.FC = () => (
   <div style={{ textAlign: 'center', marginBottom: '20px' }}>
@@ -86,9 +88,36 @@ const SettingsButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
   </button>
 );
 
+// Manual Button Component
+const ManualButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      position: 'absolute',
+      top: '20px',
+      left: '20px',
+      padding: '12px 24px',
+      backgroundColor: '#2d5016',
+      border: '3px solid #1a3009',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+      fontFamily: "'Cinzel', serif",
+      fontSize: '1rem',
+      fontWeight: 700,
+      color: '#f5e6c8',
+      textTransform: 'uppercase',
+      letterSpacing: '0.05em',
+    }}
+  >
+    Manual
+  </button>
+);
+
 function Game() {
   const [volume, setVolume] = useState(0.02);
   const [showSettings, setShowSettings] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const webSocketState = useAppSelector(selectWebSocket);
 
@@ -144,6 +173,9 @@ function Game() {
     >
       {/* Settings Button */}
       <SettingsButton onClick={() => setShowSettings(true)} />
+      
+      {/* Manual Button */}
+      <ManualButton onClick={() => setShowManual(true)} />
 
       {/* Title Banner */}
       <TitleBanner />
@@ -224,6 +256,16 @@ function Game() {
             {Math.round(volume * 100)}%
           </div>
         </div>
+      </MedievalModal>
+
+      {/* Manual Modal */}
+      <MedievalModal
+        isOpen={showManual}
+        onClose={() => setShowManual(false)}
+        title="Royal Archive"
+        size="medium"
+      >
+        <GameManual />
       </MedievalModal>
     </div>
   );

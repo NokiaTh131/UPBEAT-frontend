@@ -20,6 +20,65 @@ import { useAppSelector, useAppDispatch } from "../customHook/store/hooks.ts";
 import { selectUsername } from "../customHook/store/Slices/usernameSlice.ts";
 import { resetUsername } from "../customHook/store/Slices/usernameSlice.ts";
 import { selectWebSocket, resetWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
+import GameManual from "./common/GameManual";
+
+const STARTER_STRATEGY = `# Sample construction plan
+# t = t + 1  # keeping track of the turn number
+m = 0  # number of random moves
+while (deposit) { # still our region
+  if (deposit - 100)
+  then collect (deposit / 4)  # collect 1/4 of available deposit
+  else if (budget - 25) then invest 25
+  else {}
+  if (budget - 100) then {} else done  # too poor to do anything else
+  opponentLoc = opponent
+  if (opponentLoc / 10 - 1)
+  then  # opponent afar
+    if (opponentLoc % 10 - 5) then move downleft
+    else if (opponentLoc % 10 - 4) then move down
+    else if (opponentLoc % 10 - 3) then move downright
+    else if (opponentLoc % 10 - 2) then move upright
+    else if (opponentLoc % 10 - 1) then move up
+    else move upleft
+  else if (opponentLoc)
+  then  # opponent adjacent to city crew
+    if (opponentLoc % 10 - 5) then {
+      cost = 10 ^ (nearby upleft % 100 + 1)
+      if (budget - cost) then shoot upleft cost else {}
+    }
+    else if (opponentLoc % 10 - 4) then {
+      cost = 10 ^ (nearby downleft % 100 + 1)
+      if (budget - cost) then shoot downleft cost else {}
+    }
+    else if (opponentLoc % 10 - 3) then {
+      cost = 10 ^ (nearby down % 100 + 1)
+      if (budget - cost) then shoot down cost else {}
+    }
+    else if (opponentLoc % 10 - 2) then {
+      cost = 10 ^ (nearby downright % 100 + 1)
+      if (budget - cost) then shoot downright cost else {}
+    }
+    else if (opponentLoc % 10 - 1) then {
+      cost = 10 ^ (nearby upright % 100 + 1)
+      if (budget - cost) then shoot upright cost else {}
+    }
+    else {
+      cost = 10 ^ (nearby up % 100 + 1)
+      if (budget - cost) then shoot up cost else {}
+    }
+  else {  # no visible opponent; move in a random direction
+    dir = random % 6
+    if (dir - 4) then move upleft
+    else if (dir - 3) then move downleft
+    else if (dir - 2) then move down
+    else if (dir - 1) then move downright
+    else if (dir) then move upright
+    else move up
+    m = m + 1
+  }
+}  # end while
+# city crew on a region belonging to nobody, so claim it
+if (budget - 1) then invest 1 else {}`;
 
 // Terrain assignment based on position (creates varied landscape)
 const getTerrainForPosition = (row: number, col: number): TerrainType => {
@@ -76,8 +135,11 @@ function HexagonalGrid() {
   const [countdown2, setCountdown2] = useState(0);
   const [isEditorFolded, setIsEditorFolded] = useState(false);
   const [showGameOver, setShowGameOver] = useState(false);
+  const [showManual, setShowManual] = useState(false);
   const [winnerName, setWinnerName] = useState("");
   const [isRestarting, setIsRestarting] = useState(false);
+  const [syntaxErrorMsg, setSyntaxErrorMsg] = useState("");
+  const [showSyntaxError, setShowSyntaxError] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
@@ -338,9 +400,13 @@ function HexagonalGrid() {
       setIsLoading(false);
       playerReady();
       setShowNotification(false);
-    } catch (err) {
+    } catch (err: any) {
       setIsButtonDisabled(false);
       setIsLoading(false);
+      console.error("Plan execution failed:", err);
+      const msg = err.response?.data || err.message || "Unknown error occurred";
+      setSyntaxErrorMsg(typeof msg === 'string' ? msg : JSON.stringify(msg));
+      setShowSyntaxError(true);
     }
   };
 
@@ -685,36 +751,88 @@ function HexagonalGrid() {
                   fontSize: '0.9rem',
                   border: '2px solid #444',
                   borderRadius: '4px',
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#000000',
                   color: '#ffffff',
                   boxSizing: 'border-box',
                   resize: 'none',
                 }}
               />
-              <button
-                onClick={handleSaveConstructionPlan}
-                disabled={isButtonDisabled}
-                style={{
-                  width: '100%',
-                  marginTop: '12px',
-                  padding: '10px',
-                  fontFamily: "'Cinzel', serif",
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  backgroundColor: isButtonDisabled ? '#6b6b6b' : '#c9a227',
-                  color: '#2d2d2d',
-                  border: '2px solid #5d2e0c',
-                  borderRadius: '4px',
-                  cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                  textTransform: 'uppercase',
-                }}
-              >
-                {isLoading ? 'Sending...' : 'Issue Decree'}
-              </button>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+                <button
+                  onClick={() => setShowManual(true)}
+                  style={{
+                    flex: '1',
+                    padding: '10px',
+                    fontFamily: "'Cinzel', serif",
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    backgroundColor: '#6b4423',
+                    color: '#f5e6c8',
+                    border: '2px solid #5d2e0c',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Manual
+                </button>
+                <button
+                  onClick={() => setConstructionPlanText(STARTER_STRATEGY)}
+                  style={{
+                    flex: '1',
+                    padding: '10px',
+                    fontFamily: "'Cinzel', serif",
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                    backgroundColor: '#1a3a5c',
+                    color: '#f5e6c8',
+                    border: '2px solid #0d1e30',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Template
+                </button>
+                <button
+                  onClick={handleSaveConstructionPlan}
+                  disabled={isButtonDisabled}
+                  style={{
+                    flex: '2',
+                    padding: '10px',
+                    fontFamily: "'Cinzel', serif",
+                    fontSize: '0.9rem',
+                    fontWeight: 700,
+                    backgroundColor: isButtonDisabled ? '#6b6b6b' : '#c9a227',
+                    color: '#2d2d2d',
+                    border: '2px solid #5d2e0c',
+                    borderRadius: '4px',
+                    cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  {isLoading ? 'Sending...' : 'Issue Decree'}
+                </button>
+              </div>
             </div>
           )}
         </div>
       )}
+
+      {/* Manual Modal */}
+      <MedievalModal
+        isOpen={showManual}
+        onClose={() => setShowManual(false)}
+        title="Royal Archive"
+        size="medium"
+        closable={true}
+        foldable={false}
+        zIndex={12000}
+        position="center"
+        showBackdrop={true}
+      >
+        <GameManual />
+      </MedievalModal>
 
       {/* Turn Notification Modal - Non-closable but foldable, lower z-index */}
       <MedievalModal
@@ -874,6 +992,50 @@ function HexagonalGrid() {
             }}
           >
             {isRestarting ? 'Restarting...' : 'Play Again'}
+          </button>
+        </div>
+      </MedievalModal>
+
+      {/* Syntax Error Modal */}
+      <MedievalModal
+        isOpen={showSyntaxError}
+        onClose={() => setShowSyntaxError(false)}
+        title="Scribe's Error"
+        size="small"
+        closable={true}
+        foldable={false}
+        zIndex={13000}
+        position="center"
+        showBackdrop={true}
+      >
+        <div style={{ textAlign: 'center', padding: '16px 0' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>📜⚠️</div>
+          <p
+            style={{
+              fontFamily: "'IM Fell English', serif",
+              fontSize: '1.1rem',
+              color: '#8b0000',
+              marginBottom: '24px',
+              whiteSpace: 'pre-wrap',
+            }}
+          >
+            {syntaxErrorMsg}
+          </p>
+          <button
+            onClick={() => setShowSyntaxError(false)}
+            style={{
+              padding: '10px 24px',
+              fontFamily: "'Cinzel', serif",
+              fontWeight: 700,
+              backgroundColor: '#6b4423',
+              color: '#f5e6c8',
+              border: '2px solid #5d2e0c',
+              borderRadius: '4px',
+              cursor: 'pointer',
+              textTransform: 'uppercase',
+            }}
+          >
+            Rewrite Decree
           </button>
         </div>
       </MedievalModal>
