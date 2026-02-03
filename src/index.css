@@ -1,60 +1,293 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Medieval Theme CSS Variables */
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  /* Parchment Colors */
+  --parchment-light: #f5e6c8;
+  --parchment: #e8d4a8;
+  --parchment-dark: #d4c090;
+  --parchment-aged: #c4a86c;
+  
+  /* Leather & Wood */
+  --leather: #8b4513;
+  --leather-dark: #5d2e0c;
+  --wood: #6b4423;
+  --wood-dark: #5c4a1f;
+  
+  /* Nature */
+  --forest: #2d5016;
+  --forest-light: #4a7c23;
+  --meadow: #7cb342;
+  --water: #3a7ca5;
+  --water-dark: #1a3a5c;
+  --mountain: #6b6b6b;
+  --mountain-dark: #4a4a4a;
+  --desert: #d4a574;
+  --swamp: #556b2f;
+  
+  /* Accents */
+  --gold: #c9a227;
+  --gold-light: #ffd700;
+  --blood-red: #8b0000;
+  --royal-purple: #4b0082;
+  
+  /* Ink & Text */
+  --ink: #2d2d2d;
+  --ink-light: #4a4a4a;
+  
+  /* Typography */
+  font-family: 'MedievalSharp', cursive;
   line-height: 1.5;
   font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(28, 27, 27, 0.87);
-  background: linear-gradient(to bottom, #15152e, #0000);
-
+  color: var(--ink);
+  
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow: auto;
 }
 
+/* Base Body Styles */
 body {
   margin: 0;
-  display: flex;
-  place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  background-color: var(--parchment-dark);
+  background-image: 
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 69, 19, 0.03) 2px,
+      rgba(139, 69, 19, 0.03) 4px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 2px,
+      rgba(139, 69, 19, 0.03) 2px,
+      rgba(139, 69, 19, 0.03) 4px
+    );
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  color: var(--leather-dark);
 }
 
 h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+  font-size: 2.5em;
+  line-height: 1.2;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  margin: 0.6em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+h2 {
+  font-size: 2em;
+}
+
+h3 {
+  font-size: 1.5em;
+}
+
+/* Medieval Button Base */
+button, .btn-medieval {
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  padding: 0.75em 1.5em;
+  border: 3px solid var(--leather);
+  border-radius: 4px;
+  background-color: var(--parchment);
+  color: var(--leather-dark);
   cursor: pointer;
-  transition: border-color 0.25s;
-  color: #ffffff;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 4px 0 var(--leather-dark),
+    0 6px 8px rgba(0, 0, 0, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #5c5c5c;
-    background-color: #000000;
+button:hover, .btn-medieval:hover {
+  background-color: var(--parchment-light);
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 0 var(--leather-dark),
+    0 8px 12px rgba(0, 0, 0, 0.3);
+}
+
+button:active, .btn-medieval:active {
+  transform: translateY(2px);
+  box-shadow: 
+    0 2px 0 var(--leather-dark),
+    0 3px 4px rgba(0, 0, 0, 0.3);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Primary Button (Gold) */
+.btn-primary {
+  background-color: var(--gold);
+  border-color: var(--leather-dark);
+  color: var(--leather-dark);
+}
+
+.btn-primary:hover {
+  background-color: var(--gold-light);
+}
+
+/* Danger Button (Blood Red) */
+.btn-danger {
+  background-color: var(--blood-red);
+  border-color: #4a0000;
+  color: var(--parchment-light);
+  box-shadow: 
+    0 4px 0 #4a0000,
+    0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-danger:hover {
+  background-color: #a00000;
+}
+
+/* Input Fields */
+input, textarea, select {
+  font-family: 'IM Fell English', serif;
+  font-size: 1.1em;
+  padding: 0.75em 1em;
+  border: 2px solid var(--leather);
+  border-radius: 4px;
+  background-color: var(--parchment-light);
+  color: var(--ink);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 
+    inset 0 2px 4px rgba(0, 0, 0, 0.1),
+    0 0 0 3px rgba(201, 162, 39, 0.3);
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--ink-light);
+  font-style: italic;
+}
+
+/* Parchment Card */
+.parchment-card {
+  background-color: var(--parchment);
+  border: 3px solid var(--leather);
+  border-radius: 8px;
+  padding: 1.5em;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.2),
+    inset 0 0 20px rgba(139, 69, 19, 0.1);
+}
+
+/* Scroll Container */
+.scroll-container {
+  background-color: var(--parchment-light);
+  border: 4px solid var(--wood);
+  border-radius: 8px;
+  padding: 2em;
+  position: relative;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.scroll-container::before,
+.scroll-container::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background-color: var(--wood);
+  border-radius: 10px;
+}
+
+.scroll-container::before {
+  top: -12px;
+}
+
+.scroll-container::after {
+  bottom: -12px;
+}
+
+/* Medieval Decorative Border */
+.medieval-border {
+  border: 4px double var(--leather);
+  padding: 4px;
+  background-color: var(--parchment);
+}
+
+.medieval-border-inner {
+  border: 2px solid var(--leather);
+  padding: 1em;
+}
+
+/* Text Styles */
+.text-title {
+  font-family: 'Cinzel', serif;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--leather-dark);
+  text-shadow: 2px 2px 0 var(--parchment-dark);
+}
+
+.text-body {
+  font-family: 'IM Fell English', serif;
+  font-size: 1.1em;
+  line-height: 1.6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.4s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Utility Classes */
+.shadow-medieval {
+  box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.5), 0 4px 8px -4px rgba(0, 0, 0, 0.3);
+}
+
+.shadow-embossed {
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 -2px 4px rgba(255, 255, 255, 0.1);
+}

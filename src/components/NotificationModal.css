@@ -1,30 +1,61 @@
-/* NotificationModal.css */
+/* NotificationModal.css - Medieval Theme */
 
 .notification-modal {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: #131212;
-  padding: 20px;
-  border-radius: 20px;
-  box-shadow: 0 7px 30px #000000;
+  background-color: #e8d4a8;
+  padding: 24px;
+  border: 4px solid #8b4513;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   z-index: 9998;
-  color: #333; /* Change text color here */
 }
 
 .notification-content {
   text-align: center;
-  color: #ffffff; /* Change text color here */
-  font-size: 16px;
-  font-family: "Press Start 2P", cursive;
+  color: #5d2e0c;
+  font-size: 1rem;
+  font-family: 'IM Fell English', serif;
 }
 
 .notification-content p {
-  margin: 10px;
+  margin: 16px 0;
+  font-size: 1.1rem;
 }
 
 .notification-content button {
-  margin-top: 16px;
-  padding: 10px 20px;
+  margin: 8px;
+  padding: 12px 24px;
+  font-family: 'Cinzel', serif;
+  font-weight: 600;
+  text-transform: uppercase;
+  border: 3px solid #5d2e0c;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.notification-content button:first-of-type {
+  background-color: #2d5016;
+  color: #f5e6c8;
+  border-color: #1a3009;
+}
+
+.notification-content button:last-of-type {
+  background-color: #8b0000;
+  color: #f5e6c8;
+  border-color: #4a0000;
+}
+
+.notification-content button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.notification-content button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }

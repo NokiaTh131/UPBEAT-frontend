@@ -1,26 +1,71 @@
-html,
-body {
+/* Game.css - Medieval Theme */
+
+.game-container {
+  min-height: 100vh;
+  width: 100%;
+  background-color: #d4c090;
+  position: relative;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.game {
-  width: 100vw;
-  height: 100vh;
-  padding: 3em 0 1em 0;
+/* Castle silhouette background */
+.castle-bg {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  opacity: 0.15;
 }
 
-h1 {
-  margin: 0;
+/* Title banner animation */
+.title-banner {
+  animation: float 3s ease-in-out infinite;
 }
 
-.centered-container {
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Settings button */
+.settings-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  background-color: #6b4423;
+  border: 3px solid #5d2e0c;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.settings-btn:hover {
+  transform: scale(1.1);
+}
+
+/* Message container */
+.message-container {
   position: fixed;
-  top: 10%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 9999; /* Set a high z-index to make it appear on top of other elements */
-  background-color: rgb(0, 0, 0); /* Adjust background color as needed */
-  padding: 20px; /* Adjust padding as needed */
-  border: 1px solid #ccc; /* Add a border if desired */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add a box shadow for a subtle effect */
+  top: 80px;
+  left: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 200px;
+  overflow: hidden;
 }

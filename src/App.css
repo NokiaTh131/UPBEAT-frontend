@@ -1,8 +1,41 @@
+/* App.css - Medieval Theme Global Styles */
+
 * {
   user-select: none;
   -webkit-user-drag: none;
+  box-sizing: border-box;
 }
+
 #root {
-  margin: 0 auto;
-  text-align: center;
+  margin: 0;
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Selection styling */
+::selection {
+  background-color: #c9a227;
+  color: #5d2e0c;
+}
+
+/* Focus visible for accessibility */
+:focus-visible {
+  outline: 3px solid #c9a227;
+  outline-offset: 2px;
+}
+
+/* Link styling */
+a {
+  color: #8b4513;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #c9a227;
 }
