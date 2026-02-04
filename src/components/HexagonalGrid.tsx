@@ -21,6 +21,7 @@ import { selectUsername } from "../customHook/store/Slices/usernameSlice.ts";
 import { resetUsername } from "../customHook/store/Slices/usernameSlice.ts";
 import { selectWebSocket, resetWebSocket } from "../customHook/store/Slices/webSocketSlice.ts";
 import GameManual from "./common/GameManual";
+import Editor from "@monaco-editor/react";
 
 const STARTER_STRATEGY = `# Sample construction plan
 # t = t + 1  # keeping track of the turn number
@@ -469,7 +470,7 @@ function HexagonalGrid() {
 
   const { rows, cols } = player.bindings;
   const graph = landed?.map.adjacencyMatrix;
-  const playerColor = playerColors[(player.id - 1) % playerColors.length];
+  const playerColor = playerColors[((player.id || 1) - 1) % playerColors.length] || playerColors[0];
 
   return (
     <div
@@ -740,23 +741,30 @@ function HexagonalGrid() {
           {/* Collapsible content */}
           {!isEditorFolded && (
             <div style={{ padding: '16px' }}>
-              <textarea
-                value={constructionPlanText}
-                onChange={(e) => setConstructionPlanText(e.target.value)}
+              <div
                 style={{
                   width: '100%',
                   height: '530px',
-                  padding: '12px',
-                  fontFamily: "'Courier New', monospace",
-                  fontSize: '0.9rem',
                   border: '2px solid #444',
                   borderRadius: '4px',
-                  backgroundColor: '#000000',
-                  color: '#ffffff',
-                  boxSizing: 'border-box',
-                  resize: 'none',
+                  overflow: 'hidden',
                 }}
-              />
+              >
+                <Editor
+                  height="100%"
+                  language="java"
+                  theme="vs-dark"
+                  value={constructionPlanText}
+                  onChange={(value) => setConstructionPlanText(value || "")}
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    wordWrap: 'on',
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                  }}
+                />
+              </div>
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
                 <button
                   onClick={() => setShowManual(true)}
